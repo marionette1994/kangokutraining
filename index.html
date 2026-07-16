@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#EFE5CB">
+  <meta name="description" content="鍛帳 — 監獄トレーニング(Convict Conditioning)ビッグ6を段位で記録する和の稽古録">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="鍛帳">
+  <meta name="mobile-web-app-capable" content="yes">
+
+  <title>鍛帳</title>
+
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="./icons/icon-512.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="./icons/icon-180.png">
+
+  <!-- Tailwind: pre-built static CSS (self-hosted, 7KB, no CDN / no browser JIT) -->
+  <link rel="stylesheet" href="./vendor/tailwind.css">
+
+  <!--
+    Web fonts are loaded async and are PURELY decorative.
+    If blocked (corporate proxy) or offline, the app falls back to the
+    system mincho (Yu Mincho / Hiragino Mincho) and still looks correct.
+  -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@400;500;700;800&family=Yuji+Syuku&display=swap"
+        media="print" onload="this.media='all'">
+
+  <style>
+    :root {
+      --washi: #EFE5CB;
+      --washi-light: #F5EDD8;
+      --washi-dark: #E5DAC0;
+      --washi-line: #C4B896;
+      --sumi: #1F1B15;
+      --sumi-light: #4A4239;
+      --sumi-dim: #7A6E5C;
+      --sumi-faint: #B29A76;
+      --shu: #B0322B;
+      --shu-dark: #8F2723;
+      --gold: #A88B5F;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+
+    html, body {
+      background-color: var(--washi);
+      color: var(--sumi);
+      font-family: "Shippori Mincho B1", "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", serif;
+      -webkit-tap-highlight-color: transparent;
+      overscroll-behavior-y: contain;
+    }
+
+    .font-mincho { font-family: "Shippori Mincho B1", "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", serif; }
+    .font-brush  { font-family: "Yuji Syuku", "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif; font-weight: 400; }
+
+    .washi-bg { background-color: var(--washi); }
+
+    .washi-fibers { position: relative; }
+    .washi-fibers::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.35;
+      background-image:
+        radial-gradient(at 15% 25%, rgba(176, 50, 43, 0.03) 0px, transparent 60%),
+        radial-gradient(at 85% 75%, rgba(168, 139, 95, 0.05) 0px, transparent 60%),
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.3 0 0 0 0 0.25 0 0 0 0 0.15 0 0 0 0.4 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: auto, auto, 300px 300px;
+      mix-blend-mode: multiply;
+      z-index: 0;
+    }
+    .washi-fibers > * { position: relative; z-index: 1; }
+
+    .card-washi {
+      background-color: rgba(245, 237, 216, 0.6);
+      border: 1px solid var(--washi-line);
+      transition: border-color 0.15s;
+    }
+    .card-washi:hover { border-color: var(--sumi-light); }
+
+    .input-washi {
+      background-color: rgba(245, 237, 216, 0.8);
+      border-color: var(--sumi-light);
+      color: var(--sumi);
+    }
+    .input-washi:focus {
+      outline: none;
+      border-color: var(--shu);
+      box-shadow: 0 0 0 1px var(--shu);
+    }
+
+    button:active { transform: scale(0.98); }
+    button { transition: transform 0.05s; }
+
+    input[type="date"] { color-scheme: light; }
+
+    /* Boot splash */
+    #boot {
+      position: fixed; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 1rem;
+      color: var(--sumi-dim);
+      font-family: "Shippori Mincho B1", "Yu Mincho", serif;
+      font-size: 14px; letter-spacing: 0.4em;
+      background-color: var(--washi);
+      z-index: 100;
+      padding: 2rem;
+      text-align: center;
+    }
+    #boot .err {
+      color: var(--shu);
+      font-size: 13px;
+      letter-spacing: 0.05em;
+      line-height: 1.9;
+      max-width: 30rem;
+      border: 1px solid var(--shu);
+      padding: 1rem 1.25rem;
+      background: var(--washi-light);
+    }
+    #boot .err code {
+      font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+      font-size: 12px;
+      color: var(--sumi);
+      word-break: break-all;
+    }
+  </style>
+</head>
+<body>
+  <div id="boot"><div>開 帳 中 ...</div></div>
+  <div id="root"></div>
+
+  <script>
+    // ---- Failure reporting -------------------------------------------------
+    // Never leave the user staring at an eternal splash screen again.
+    (function () {
+      var reported = false;
+      function report(title, detail) {
+        if (reported) return;
+        reported = true;
+        var boot = document.getElementById('boot');
+        if (!boot) return;
+        boot.innerHTML =
+          '<div style="letter-spacing:0.3em;font-size:16px;color:var(--sumi)">鍛帳</div>' +
+          '<div class="err"><div style="font-weight:700;margin-bottom:.5rem">' + title + '</div>' +
+          '<code>' + (detail || '') + '</code></div>';
+      }
+      window.__tanchoReport = report;
+
+      window.addEventListener('error', function (e) {
+        var src = e.target && e.target.src;
+        if (src) {
+          report('読み込みに失敗しました', '取得できないファイル: ' + src);
+        } else if (e.message) {
+          report('起動時エラー', e.message);
+        }
+      }, true);
+
+      window.addEventListener('load', function () {
+        setTimeout(function () {
+          var root = document.getElementById('root');
+          if (root && root.children.length > 0) return; // mounted fine
+          var missing = [];
+          if (typeof window.React === 'undefined') missing.push('React');
+          if (typeof window.ReactDOM === 'undefined') missing.push('ReactDOM');
+          if (typeof window.Recharts === 'undefined') missing.push('Recharts');
+          if (missing.length) {
+            report('依存ファイルが読み込めません', '不足: ' + missing.join(', ') +
+              ' — vendor/ フォルダがリポジトリに含まれているか確認してください。');
+          } else {
+            report('描画に失敗しました', 'コンソール(F12)のエラーをご確認ください。');
+          }
+        }, 2000);
+      });
+    })();
+
+    // ---- Remove splash once React mounts ----------------------------------
+    (function () {
+      var root = document.getElementById('root');
+      var observer = new MutationObserver(function () {
+        if (root.children.length > 0) {
+          var boot = document.getElementById('boot');
+          if (boot) boot.remove();
+          observer.disconnect();
+        }
+      });
+      observer.observe(root, { childList: true });
+    })();
+  </script>
+
+  <!-- Vendored runtime — self-hosted, same-origin, works behind any proxy -->
+  <script src="./vendor/react.min.js"></script>
+  <script src="./vendor/react-dom.min.js"></script>
+  <script src="./vendor/prop-types.min.js"></script>
+  <script src="./vendor/recharts.min.js"></script>
+
+  <script src="./app.js"></script>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('./sw.js').catch(function (err) {
+          console.warn('SW registration failed:', err);
+        });
+      });
+    }
+  </script>
+</body>
+</html>

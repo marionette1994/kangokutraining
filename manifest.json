@@ -1,0 +1,33 @@
+{
+  "name": "鍛帳",
+  "short_name": "鍛帳",
+  "description": "監獄トレーニング(Convict Conditioning)ビッグ6の稽古を段位で記録する和の帳面",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#EFE5CB",
+  "theme_color": "#EFE5CB",
+  "lang": "ja",
+  "categories": ["fitness", "health", "productivity"],
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
